@@ -1,6 +1,11 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import * as dat from "lil-gui";
+import Stats from "stats.js";
+
+const stats = new Stats();
+stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+document.body.appendChild(stats.dom);
 
 /**
  * Base
@@ -78,8 +83,17 @@ scene.add(helper);
 
 /** DOOR */
 const door = new THREE.Mesh(
-  new THREE.PlaneGeometry(1, 2.2),
-  new THREE.MeshStandardMaterial()
+  new THREE.PlaneGeometry(1.4, 2.2),
+  new THREE.MeshStandardMaterial({
+    map: doorColor,
+    alphaMap: doorAlpha,
+    normalMap: doorNormal,
+    roughnessMap: doorRoughness,
+    aoMap: doorOcclusion,
+    heightMap: doorHeight,
+    metalnessMap: doorMetalness,
+    transparent: true,
+  })
 );
 
 door.position.set(
@@ -87,14 +101,8 @@ door.position.set(
   floor.position.y + door.geometry.parameters.height * 0.5,
   walls.position.z + walls.geometry.parameters.width * 0.5 + 0.01
 );
-door.material.colorMap = doorColor;
-door.material.roughnessMap = doorRoughness;
-door.material.metalnessMap = doorMetalness;
-door.material.aoMap = doorOcclusion;
-door.material.normalMap = doorNormal;
-door.material.alphaMap = doorAlpha;
-door.material.transparent = true;
-door.material.heightMap = doorHeight;
+
+door.translateY(-0.1);
 
 /** ROOF */
 
@@ -114,6 +122,73 @@ roof.position.y =
 house.add(roof);
 house.add(walls);
 house.add(door);
+
+/**
+ * BUSHES
+ */
+
+const houseCorners = new THREE.Box3();
+houseCorners.setFromObject(walls);
+
+const low = houseCorners.min;
+const high = houseCorners.max;
+
+const cornerBottomLeft = new THREE.Vector3(low.x, low.y, low.z);
+const cornerBottomRight = new THREE.Vector3(high.x, low.y, low.z);
+const cornerUpperRight = new THREE.Vector3(high.x, low.y, high.z);
+const cornerUpperLeft = new THREE.Vector3(low.x, low.y, high.z);
+
+const bushMaterial = new THREE.MeshStandardMaterial({ color: "green" });
+bushMaterial.aoMap = grassOcclusion;
+bushMaterial.normalMap = grassNormal;
+bushMaterial.colorMap = grassColor;
+bushMaterial.roughnessMap = grassRoughness;
+
+const bushSize = 0.5;
+const bushGeometry = new THREE.SphereGeometry(bushSize, 8, 8);
+
+const minDoorOffset = door.position.x - door.geometry.parameters.width;
+const maxDoorOffset = door.position.x + door.geometry.parameters.width * 0.5;
+
+for (let i = minDoorOffset; i > cornerUpperLeft.x; i -= bushSize * 2) {
+  const bush = new THREE.Mesh(bushGeometry, bushMaterial);
+  bush.position.x = i;
+  bush.position.y = cornerUpperLeft.y;
+  bush.position.z = cornerUpperLeft.z;
+  house.add(bush);
+}
+
+for (let i = cornerUpperLeft.z; i > cornerBottomLeft.z; i -= bushSize * 2) {
+  const bush = new THREE.Mesh(bushGeometry, bushMaterial);
+  bush.position.x = cornerBottomLeft.x;
+  bush.position.y = cornerBottomLeft.y;
+  bush.position.z = i;
+  house.add(bush);
+}
+
+for (let i = cornerBottomLeft.x; i < cornerBottomRight.x; i += bushSize * 2) {
+  const bush = new THREE.Mesh(bushGeometry, bushMaterial);
+  bush.position.x = i;
+  bush.position.y = cornerBottomRight.y;
+  bush.position.z = cornerBottomRight.z;
+  house.add(bush);
+}
+
+for (let i = cornerBottomRight.z; i < cornerUpperRight.z; i += bushSize * 2) {
+  const bush = new THREE.Mesh(bushGeometry, bushMaterial);
+  bush.position.x = cornerUpperRight.x;
+  bush.position.y = cornerUpperRight.y;
+  bush.position.z = i;
+  house.add(bush);
+}
+
+for (let i = cornerUpperRight.x; i > maxDoorOffset; i -= bushSize * 2) {
+  const bush = new THREE.Mesh(bushGeometry, bushMaterial);
+  bush.position.x = i;
+  bush.position.y = cornerUpperRight.y;
+  bush.position.z = cornerUpperRight.z;
+  house.add(bush);
+}
 
 /**
  * Lights
@@ -190,6 +265,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 const clock = new THREE.Clock();
 
 const tick = () => {
+  stats.begin();
   const elapsedTime = clock.getElapsedTime();
 
   // Update controls
@@ -200,6 +276,8 @@ const tick = () => {
 
   // Call tick again on the next frame
   window.requestAnimationFrame(tick);
+
+  stats.end();
 };
 
 tick();
