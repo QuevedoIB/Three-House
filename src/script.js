@@ -108,7 +108,7 @@ door.translateY(-0.1);
 
 const roof = new THREE.Mesh(
   new THREE.ConeGeometry(walls.geometry.parameters.width - 1, 1, 4, 1),
-  new THREE.MeshBasicMaterial({ color: 0xfa4b7f })
+  new THREE.MeshBasicMaterial({ color: 0xd06d43, map: brickColor })
 );
 
 roof.rotation.y = Math.PI * 0.25;
@@ -147,10 +147,13 @@ bushMaterial.roughnessMap = grassRoughness;
 const bushSize = 0.5;
 const bushGeometry = new THREE.SphereGeometry(bushSize, 8, 8);
 
-const minDoorOffset = door.position.x - door.geometry.parameters.width;
-const maxDoorOffset = door.position.x + door.geometry.parameters.width * 0.5;
+const minDoorOffset =
+  door.position.x - door.geometry.parameters.width + bushSize;
+const maxDoorOffset =
+  door.position.x + door.geometry.parameters.width - bushSize;
 
-for (let i = minDoorOffset; i > cornerUpperLeft.x; i -= bushSize * 2) {
+for (let i = cornerUpperLeft.x; i < minDoorOffset; i += bushSize * 2) {
+  console.log(i, "1");
   const bush = new THREE.Mesh(bushGeometry, bushMaterial);
   bush.position.x = i;
   bush.position.y = cornerUpperLeft.y;
@@ -182,11 +185,14 @@ for (let i = cornerBottomRight.z; i < cornerUpperRight.z; i += bushSize * 2) {
   house.add(bush);
 }
 
+console.log(minDoorOffset, maxDoorOffset, door.position.x, cornerUpperRight.x);
+
 for (let i = cornerUpperRight.x; i > maxDoorOffset; i -= bushSize * 2) {
+  console.log(i, "2");
   const bush = new THREE.Mesh(bushGeometry, bushMaterial);
   bush.position.x = i;
-  bush.position.y = cornerUpperRight.y;
-  bush.position.z = cornerUpperRight.z;
+  bush.position.y = cornerUpperLeft.y;
+  bush.position.z = cornerUpperLeft.z;
   house.add(bush);
 }
 
