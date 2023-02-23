@@ -108,9 +108,6 @@ scene.add(floor);
 
 walls.position.y = floor.position.y + walls.geometry.parameters.height * 0.5;
 
-const helper = new THREE.AxesHelper(10);
-scene.add(helper);
-
 /** DOOR */
 const door = new THREE.Mesh(
   new THREE.PlaneGeometry(1.4, 2.2, 50, 50),
@@ -251,10 +248,11 @@ for (let i = 0; i < graveyardAmount; i++) {
   graveyard.position.set(x, y, z);
   graveyard.rotation.y = Math.random() * Math.PI * 0.5;
   graveyard.rotation.z = zRotation;
+  graveyard.castShadow = true;
 
   graveyards.add(graveyard);
 }
-scene.add(graveyards);
+house.add(graveyards);
 
 /**
  * FOG
@@ -278,6 +276,7 @@ gui.add(moonLight, "intensity").min(0).max(1).step(0.001);
 gui.add(moonLight.position, "x").min(-5).max(5).step(0.001);
 gui.add(moonLight.position, "y").min(-5).max(5).step(0.001);
 gui.add(moonLight.position, "z").min(-5).max(5).step(0.001);
+
 scene.add(moonLight);
 
 const doorLight = new THREE.PointLight("#ff7d46", 0.8, 7);
@@ -286,6 +285,7 @@ doorLight.position.set(
   door.position.y * 2,
   door.position.z
 );
+
 scene.add(doorLight);
 
 /**
@@ -340,6 +340,22 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setClearColor("#262837");
+
+/**
+ * SHADOWS
+ */
+
+doorLight.castShadow = true;
+moonLight.castShadow = true;
+walls.castShadow = true;
+house.receiveShadow = true;
+floor.receiveShadow = true;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+doorLight.shadow.mapSize.width = 256;
+doorLight.shadow.mapSize.height = 256;
+doorLight.shadow.camera.far = 7;
 
 /**
  * Animate
