@@ -53,8 +53,10 @@ const house = new THREE.Group();
  * walls
  */
 
+const wallsSize = 6;
+
 const walls = new THREE.Mesh(
-  new THREE.BoxGeometry(6, 3, 6),
+  new THREE.BoxGeometry(wallsSize, 3, wallsSize),
   new THREE.MeshStandardMaterial()
 );
 
@@ -90,7 +92,7 @@ const door = new THREE.Mesh(
     normalMap: doorNormal,
     roughnessMap: doorRoughness,
     aoMap: doorOcclusion,
-    heightMap: doorHeight,
+    // heightMap: doorHeight,
     metalnessMap: doorMetalness,
     transparent: true,
   })
@@ -153,7 +155,6 @@ const maxDoorOffset =
   door.position.x + door.geometry.parameters.width - bushSize;
 
 for (let i = cornerUpperLeft.x; i < minDoorOffset; i += bushSize * 2) {
-  console.log(i, "1");
   const bush = new THREE.Mesh(bushGeometry, bushMaterial);
   bush.position.x = i;
   bush.position.y = cornerUpperLeft.y;
@@ -185,16 +186,37 @@ for (let i = cornerBottomRight.z; i < cornerUpperRight.z; i += bushSize * 2) {
   house.add(bush);
 }
 
-console.log(minDoorOffset, maxDoorOffset, door.position.x, cornerUpperRight.x);
-
 for (let i = cornerUpperRight.x; i > maxDoorOffset; i -= bushSize * 2) {
-  console.log(i, "2");
   const bush = new THREE.Mesh(bushGeometry, bushMaterial);
   bush.position.x = i;
   bush.position.y = cornerUpperLeft.y;
   bush.position.z = cornerUpperLeft.z;
   house.add(bush);
 }
+
+/**
+ * GRAVEYARDS
+ */
+
+const graveyardAmount = 50;
+const graveyards = new THREE.Group();
+
+const graveyardHeight = 0.8;
+const graveyardGeometry = new THREE.BoxGeometry(0.6, graveyardHeight, 0.2);
+const graveyardMaterial = new THREE.MeshStandardMaterial({ color: 0xb2b6b1 });
+
+for (let i = 0; i < graveyardAmount; i++) {
+  const graveyard = new THREE.Mesh(graveyardGeometry, graveyardMaterial);
+  const angle = Math.random() * Math.PI * 2;
+  const offsetRadius = wallsSize + bushSize + Math.random() * (wallsSize * 0.5);
+  const x = Math.sin(angle) * offsetRadius;
+  const z = Math.cos(angle) * offsetRadius;
+
+  graveyard.position.set(x, floor.position.y + graveyardHeight * 0.5 + 0.01, z);
+
+  graveyards.add(graveyard);
+}
+scene.add(graveyards);
 
 /**
  * Lights
