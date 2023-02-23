@@ -223,6 +223,13 @@ for (let i = 0; i < graveyardAmount; i++) {
 scene.add(graveyards);
 
 /**
+ * FOG
+ */
+
+const fog = new THREE.Fog("#262837", 1, 15);
+scene.fog = fog;
+
+/**
  * Lights
  */
 // Ambient light
@@ -239,7 +246,7 @@ gui.add(moonLight.position, "y").min(-5).max(5).step(0.001);
 gui.add(moonLight.position, "z").min(-5).max(5).step(0.001);
 scene.add(moonLight);
 
-const doorLight = new THREE.PointLight("#ff7d46", 1, 7);
+const doorLight = new THREE.PointLight("#ff7d46", 0.8, 7);
 doorLight.position.set(
   door.position.x * 2,
   door.position.y * 2,
@@ -298,6 +305,7 @@ const renderer = new THREE.WebGLRenderer({
 });
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setClearColor("#262837");
 
 /**
  * Animate
